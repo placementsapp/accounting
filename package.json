@@ -1,6 +1,6 @@
 {
-	"name" : "accounting",
-	"description" : "number, money and currency formatting library",
+	"name" : "@placementsapp/accounting",
+	"description" : "(forked) number, money and currency formatting library",
 	"homepage": "http://openexchangerates.github.io/accounting.js",
 	"license": "MIT",
 	"keywords" : ["accounting", "number", "money", "currency", "format", "utilities", "finance", "exchange"],
@@ -10,7 +10,6 @@
 		"Joss Crowcroft <josscrowcroft@gmail.com> (http://www.josscrowcroft.com)"
 	],
 	"dependencies" : [],
-	"repository" : {"type": "git", "url": "git://github.com/openexchangerates/accounting.js.git"},
 	"main" : "accounting.js",
 	"version" : "0.4.2"
 }
