@@ -1,5 +1,5 @@
 /*!
- * accounting.js v0.4.2
+ * accounting.js v0.4.3
  * Copyright 2014 Open Exchange Rates
  *
  * Freely distributable under the MIT license.
@@ -17,7 +17,7 @@
 	var lib = {};
 
 	// Current version
-	lib.version = '0.4.2';
+	lib.version = '0.4.3';
 
 
 	/* --- Exposed settings --- */
@@ -165,6 +165,22 @@
 	/* --- API Methods --- */
 
 	/**
+	 * Strip "." that belong to a currency symbol (SAR ر.س, DKK kr., PAB B/.) so they
+	 * are not parsed as decimals. Keep "." between digits and leading decimals (.50).
+	 * When the decimal separator is not ".", every "." is thousands/symbol and is dropped.
+	 */
+	var stripSymbolPeriods = function(str, decimal) {
+		if (decimal !== ".") {
+			return str.split(".").join("");
+		}
+		return str
+			.replace(/(\D)\.(?=\d)/g, function(match, before) {
+				return (before === "-" || before === "(" || /\s/.test(before)) ? match : before;
+			})
+			.replace(/(\D)\.(?=\D|$)/g, "$1");
+	};
+
+	/**
 	 * Takes a string/array of strings, removes all formatting/cruft and returns the raw float value
 	 * Alias: `accounting.parse(string)`
 	 *
@@ -193,10 +209,12 @@
 		// Default decimal point comes from settings, but could be set to eg. "," in opts:
 		decimal = decimal || lib.settings.number.decimal;
 
+		var str = stripSymbolPeriods("" + value, decimal);
+
 		 // Build regex to strip out everything except digits, decimal point and minus sign:
 		var regex = new RegExp("[^0-9-" + decimal + "]", ["g"]),
 			unformatted = parseFloat(
-				("" + value)
+				str
 				.replace(/\((?=\d+)(.*)\)/, "-$1") // replace bracketed values with negatives
 				.replace(regex, '')         // strip out any cruft
 				.replace(decimal, '.')      // make sure decimal point is standard
@@ -283,10 +301,6 @@
 			});
 		}
 
-		// Clean up number:
-		number = unformat(number);
-
-		// Build options object from second param (if object) or all params, extending defaults:
 		var opts = defaults(
 				(isObject(symbol) ? symbol : {
 					symbol : symbol,
@@ -296,12 +310,11 @@
 					format : format
 				}),
 				lib.settings.currency
-			),
+			);
 
-			// Check format (returns object with pos, neg and zero):
-			formats = checkCurrencyFormat(opts.format),
+		number = unformat(number, opts.decimal);
 
-			// Choose which format to use for this value:
+		var formats = checkCurrencyFormat(opts.format),
 			useFormat = number > 0 ? formats.pos : number < 0 ? formats.neg : formats.zero;
 
 		// Return with currency symbol added:
@@ -352,7 +365,7 @@
 					return lib.formatColumn(val, opts);
 				} else {
 					// Clean up the value
-					val = unformat(val);
+					val = unformat(val, opts.decimal);
 
 					// Choose which format to use for this value (pos, neg or zero):
 					var useFormat = val > 0 ? formats.pos : val < 0 ? formats.neg : formats.zero,

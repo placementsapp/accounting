@@ -17,6 +17,8 @@ Maintained by [Open Exchange Rates](https://openexchangerates.org "Free reliable
 
 ## Changelog
 
+**v0.4.3** - `unformat` drops "." that belong to currency symbols (SAR ر.س, DKK kr., PAB B/.) so they are not treated as decimals. Callers do not pass the symbol.
+
 **v0.4.2** - Added bower.json
 
 **v0.4.1** - Alias `accounting.formatNumber()` as `accounting.format()`
